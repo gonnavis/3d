@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+        <!-- Babylon.js -->
+        <script src="/test/lib/babylon_other/hand.minified-1.2.js"></script>
+        <script src="/test/lib/babylon_other/cannon.js"></script>
+        <script src="/test/lib/babylon_other/oimo.js"></script>
+        <script src="/test/lib/babylon_other/babylon.js"></script>
+        <script type="text/javascript" src="/test/lib/Babylon.js-master_test/loaders/OBJ/babylon.objFileLoader.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 800px;
+                height: 800px;
+                touch-action: none;
+                transform: rotateZ(90deg);
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+
+        var createScene = function () {
+
+            // This creates a basic Babylon Scene object (non-mesh)
+            var scene = new BABYLON.Scene(engine);
+
+            // var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0,0,0),scene);
+            // light.intensity = 100000;
+
+            var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(120, 70, 550), scene);
+            light.intensity=.5;
+
+
+            window.camera = new BABYLON.ArcRotateCamera("arcCamera1",0,0,250,BABYLON.Vector3.Zero(),scene);
+            // camera.attachControl(canvas, true);
+
+            // camera.lowerRadiusLimit = camera.upperRadiusLimit = camera.radius;
+            //camera.attachControl(canvas,false);
+            camera.setPosition(new BABYLON.Vector3(0,0,50));
+
+            var loader = new BABYLON.AssetsManager(scene);
+
+            var position = -5;
+            var pos = function(t) {
+                t.loadedMeshes.forEach(function(m) {
+                    m.position.x -= position;
+                });
+                position += 5;
+            };
+
+            window.monster = loader.addMeshTask("monster", "", "/test/3d_obj/fallout3_monster/", "male02.obj");
+            monster.onSuccess = pos;
+
+            loader.onFinish = function() {
+
+                // camera.alpha=1.1924836332887254;
+                // camera.beta=1.1563265024020712;
+                camera.radius=309.9906310193737;
+                // camera.radius=509.9906310193737;
+                        
+                        
+                monster.loadedMeshes[0].position.x = 20;
+                window.monsterMesh=monster.loadedMeshes[0];
+                camera.target = monster.loadedMeshes[0];
+                
+                                                     
+                var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0,1,0),scene);
+                light.intensity = 0.5;
+                
+                var currentPosition = { x: 0, y: 0 };
+                var clicked = false;
+
+
+
+
+
+                canvas.addEventListener("pointerdown", function (evt) {
+                    currentPosition.x = evt.clientY;
+                    currentPosition.y = evt.clientX;
+                    
+                    clicked = true;
+                });
+                
+                canvas.addEventListener("pointermove", function (evt) {
+                    if (!clicked) {
+                        return;
+                    }
+                    if(!evt.altKey){
+                        monster.loadedMeshes[0].rotation.y = monster.loadedMeshes[0].rotation.y-(evt.clientY - currentPosition.x) / 100.0;
+                        monster.loadedMeshes[0].rotation.x = monster.loadedMeshes[0].rotation.x - (evt.clientX - currentPosition.y) / 100.0;
+                    }
+                    else{
+                        monster.loadedMeshes[0].rotation.z = monster.loadedMeshes[0].rotation.z+(evt.clientX - currentPosition.y) / 100.0;
+                    }
+                    
+                    currentPosition.x = evt.clientY;
+                    currentPosition.y = evt.clientX;
+
+                    // console.log(evt);
+                    console.log(monster.loadedMeshes[0].rotation);
+                });
+                
+                canvas.addEventListener("pointerup", function (evt) {
+                    clicked = false;
+                });
+
+
+
+
+
+                engine.runRenderLoop(function () {
+                
+                    window.m1=new BABYLON.StandardMaterial("texture3", scene);
+                    m1.diffuseTexture = new BABYLON.Texture("/test/3d_obj/fallout3_monster/male02.jpg", scene);
+                    monster.loadedMeshes[0].material=m1
+                    // m1.wireframe=true;
+
+                    scene.render();
+                });
+
+                window.zero=function(){
+                    monster.loadedMeshes[0].rotation.x=0;
+                    monster.loadedMeshes[0].rotation.y=0;
+                    monster.loadedMeshes[0].rotation.z=0;
+                }
+            };
+
+            loader.load();
+
+
+
+            // var box = BABYLON.Mesh.CreateBox("box", 6.0, scene);
+            // var sphere = BABYLON.Mesh.CreateSphere("sphere", 10.0, 10.0, scene);
+            // var cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 3, 3, 3, 6, 1, scene, false);
+            // var torus = BABYLON.Mesh.CreateTorus("torus", 5, 1, 10, scene, false);
+
+            // box.position = new BABYLON.Vector3(0, 0, 0);   // Using a vector
+            // sphere.position = new BABYLON.Vector3(100, 0, 0); // Using a vector
+            // sphere.position = new BABYLON.Vector3(150, 70, 250); // Using a vector
+            // cylinder.position = new BABYLON.Vector3(0, 100, 0);   // Using a vector
+            // torus.position = new BABYLON.Vector3(0, 0, 100);   // Using a vector
+
+            return scene;
+
+        };
+        
+        var scene = createScene();
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>

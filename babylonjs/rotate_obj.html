@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+        <!-- Babylon.js -->
+        <script src="/test/lib/babylon_other/hand.minified-1.2.js"></script>
+        <script src="/test/lib/babylon_other/cannon.js"></script>
+        <script src="/test/lib/babylon_other/oimo.js"></script>
+        <script src="/test/lib/babylon_other/babylon.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+
+        var createScene = function(){
+                        var scene = new BABYLON.Scene(engine);
+                        scene.clearColor = new BABYLON.Color3(0,0.75,0.8);
+                        var camera = new BABYLON.ArcRotateCamera("arcCamera1",0,0,50,BABYLON.Vector3.Zero(),scene);
+        
+                        camera.lowerRadiusLimit = camera.upperRadiusLimit = camera.radius;
+                        //camera.attachControl(canvas,false);
+                        camera.setPosition(new BABYLON.Vector3(0,0,50));
+                        
+                        
+                        
+                        var cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 3, 3, 3, 6, 1, scene, false);
+                        
+                        
+                        cylinder.position.x = 20;
+                        camera.target = cylinder;
+                        
+                        
+                                                             
+                        var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0,1,0),scene);
+                        light.intensity = 0.5;
+                        
+        				var currentPosition = { x: 0, y: 0 };
+        				var clicked = false;
+        				canvas.addEventListener("pointerdown", function (evt) {
+        					currentPosition.x = evt.clientX;
+        					currentPosition.y = evt.clientY;
+        					
+        					clicked = true;
+        				});
+        				
+        				canvas.addEventListener("pointermove", function (evt) {
+        					if (!clicked) {
+        						return;
+        					}
+        					cylinder.rotation.y = cylinder.rotation.y-(evt.clientX - currentPosition.x) / 100.0;
+        					cylinder.rotation.x = cylinder.rotation.x + (evt.clientY - currentPosition.y) / 100.0;
+        					
+        					currentPosition.x = evt.clientX;
+        					currentPosition.y = evt.clientY;
+        				});
+        				
+        				canvas.addEventListener("pointerup", function (evt) {
+        					clicked = false;
+        				});
+                        
+                                        
+                        return scene;
+         }
+        
+        var scene = createScene();
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
